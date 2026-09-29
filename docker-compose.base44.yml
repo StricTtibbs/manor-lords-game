@@ -1,0 +1,23 @@
+services:
+  web:
+    image: node:22
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS
+      - BASE44_PUBLIC_HOST_SUFFIX
+    command: ["sh", "-ec", "npm install && exec npx vite --host 0.0.0.0 --port 3000"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "const r=require('http').request({hostname:'127.0.0.1',port:3000,path:'/',headers:{Accept:'text/html'}},res=>process.exit(res.statusCode===200?0:1));r.on('error',()=>process.exit(1));r.end()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: on-failure
+
+volumes:
+  node_modules:
